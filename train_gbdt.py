@@ -16,28 +16,34 @@ len_test = X_test.shape[0]
 
 if os.path.exists(CHECKPOINT_PATH) == False: os.mkdir(CHECKPOINT_PATH)
 checkpoint_file = os.path.join(CHECKPOINT_PATH, 'checkpoint.pkl')
-if os.path.exists(checkpoint_file) and NEW_MODEL_FLAG == False: 
-    model = joblib.load(checkpoint_file)
-else:
-    model.fit(X_train, y_train)
+if os.path.exists(checkpoint_file) and NEW_MODEL_FLAG == False: model = joblib.load(checkpoint_file)
 
-predicted = model.predict(X_test)
 
-joblib.dump(model, checkpoint_file)
+def train():
+    print('Training...')
+    if NEW_MODEL_FLAG == True: model.fit(X_train, y_train)
+    joblib.dump(model, checkpoint_file)
 
-TP = 0
-FP = 0
-FN = 0
-TN = 0
-for i in range(len_test):
-    if y_test[i] == 1:
-        if predicted[i] == 1: TP += 1
-        else: FN += 1
-    else:
-        if predicted[i] == 1: FP += 1
-        else: TN += 1
-TPRate = TP / (TP + FN)
-FPRate = FP / (FP + TN)
-print('TPRate: ', TPRate)
-print('FPRate: ', FPRate)
-print('AUC: ', 0.5 * TPRate * FPRate + 0.5 * (1 - FPRate) * (1 + TPRate))
+
+def test():
+    predicted = model.predict(X_test)
+    TP = 0
+    FP = 0
+    FN = 0
+    TN = 0
+    for i in range(len_test):
+        if y_test[i] == 1:
+            if predicted[i] == 1: TP += 1
+            else: FN += 1
+        else:
+            if predicted[i] == 1: FP += 1
+            else: TN += 1
+    TPRate = TP / (TP + FN)
+    FPRate = FP / (FP + TN)
+    print('TPRate: ', TPRate)
+    print('FPRate: ', FPRate)
+    print('AUC: ', 0.5 * TPRate * FPRate + 0.5 * (1 - FPRate) * (1 + TPRate))
+
+if __name__ == '__main__':
+    train()
+    test()
