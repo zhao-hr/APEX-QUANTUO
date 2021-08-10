@@ -32,7 +32,7 @@ def CntNotNan(list):
 
 
 class MyDataSet(object):
-    def __init__(self, data_path) -> None:
+    def __init__(self, data_path, label) -> None:
         super().__init__()
 
         '''
@@ -51,21 +51,17 @@ class MyDataSet(object):
         '''
 
         fd = pd.read_csv(data_path)
-        self.header = fd.columns
+        self.header = fd.columns.values.tolist()
         self.data = np.array(fd)
         self.data[np.isnan(self.data)] = -1
         self.length = self.data.shape[0]
         self.width = self.data.shape[1]
+        self.index = self.header.index(label)
 
         #for i in range(self.width):
         #    print(self.header[i], ': ', CntNotNan(self.data[:,i]))
-        
-        #for i in range(1, self.width):
-        #    list = self.data[:,i]
-        #    if i == 1: list[list != 1] == 0
-        #    else: NMaxPos(list, int(CntNotNan(list) * POS_SAMPLE))
 
-        lst = self.data[:,9]
+        lst = self.data[:, self.index]
         NMaxPos(lst, int(CntNotNan(lst) * POS_SAMPLE))
 
     def __len__(self):
@@ -76,8 +72,8 @@ class MyDataSet(object):
     
     def __getitem__(self, index):
         list = copy.deepcopy(self.data[index])
-        label = list[9]
-        return np.delete(list, [0,9]), label
+        label = list[self.index]
+        return np.delete(list, [0,self.index]), label
     
     def getColumn(self, index):
         list = copy.deepcopy(self.data[:,index])
@@ -85,21 +81,21 @@ class MyDataSet(object):
     
     def train_data(self):
         data = copy.deepcopy(self.data)
-        data = np.delete(data, [0,9], axis=1)
+        data = np.delete(data, [0, self.index], axis=1)
         length = int(self.length * TRAIN_PROP)
-        return data[0:length], self.data[0:length, 9]
+        return data[0:length], self.data[0:length, self.index]
     
     def test_data(self):
         data = copy.deepcopy(self.data)
-        data = np.delete(data, [0,9], axis=1)
+        data = np.delete(data, [0, self.index], axis=1)
         length = int(self.length * TRAIN_PROP)
-        return data[length:self.length], self.data[length:self.length, 9]
+        return data[length:self.length], self.data[length:self.length, self.index]
 
 
 
 
 if __name__ == '__main__':
-    dataset = MyDataSet(DATA_PATH)
+    dataset = MyDataSet(DATA_PATH, 'total_tax')
     train_X, train_y = dataset.train_data()
     test_X, test_y = dataset.test_data()
     total_tax = dataset.getColumn(9)
