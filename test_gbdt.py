@@ -1,18 +1,21 @@
+from train_gbdt import LABEL
 from datasets import MyDataSet
 from sklearn.ensemble import GradientBoostingClassifier
 import joblib
 import os
 
+LABEL = 'total_tax'
 DATA_PATH = 'data/final_table.csv'
 CHECKPOINT_PATH = 'stats'
 
 model = GradientBoostingClassifier(learning_rate=0.1, subsample=0.9, n_estimators=100, max_depth=5, min_samples_leaf=2)
-dataset = MyDataSet(DATA_PATH)
+dataset = MyDataSet(DATA_PATH, LABEL)
 X_test, y_test = dataset.test_data()
 len_test = X_test.shape[0]
 
-if os.path.exists(CHECKPOINT_PATH) == False: os.mkdir(CHECKPOINT_PATH)
-checkpoint_file = os.path.join(CHECKPOINT_PATH, 'checkpoint.pkl')
+checkpoint_path = os.path.join(CHECKPOINT_PATH, LABEL)
+if os.path.exists(checkpoint_path) == False: os.mkdir(checkpoint_path)
+checkpoint_file = os.path.join(checkpoint_path, 'checkpoint.pkl')
 if os.path.exists(checkpoint_file): 
     model = joblib.load(checkpoint_file)
 else:
