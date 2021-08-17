@@ -1,5 +1,6 @@
+from operator import mod
 from datasets import MyDataSet
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
 from sklearn import metrics
 import joblib
 import os
@@ -7,10 +8,11 @@ import os
 LABEL = 'total_tax'
 DATA_PATH = 'data/final_table.csv'
 CHECKPOINT_PATH = 'stats/gbdt'
+K = 500
 
-model = GradientBoostingClassifier(learning_rate=0.1, subsample=0.9, n_estimators=100, max_depth=5, min_samples_leaf=2)
-dataset = MyDataSet(DATA_PATH, LABEL)
-X_test, y_test = dataset.test_data()
+model = GradientBoostingRegressor()
+dataset = MyDataSet(DATA_PATH, LABEL, 0)
+X_test, y_test = dataset.get_data()
 len_test = X_test.shape[0]
 
 checkpoint_path = os.path.join(CHECKPOINT_PATH, LABEL)
@@ -24,24 +26,18 @@ else:
 
 def test():
     predicted = model.predict(X_test)
-    TP = 0
-    FP = 0
-    FN = 0
-    TN = 0
+
     for i in range(len_test):
-        #print(y_test[i], predicted[i])
-        if y_test[i] == 1:
-            if predicted[i] == 1: TP += 1
-            else: FN += 1
-        else:
-            if predicted[i] == 1: FP += 1
-            else: TN += 1
-    TPRate = TP / (TP + FN)
-    FPRate = FP / (FP + TN)
+        print(y_test[i], predicted[i])
     AUC = metrics.roc_auc_score(y_test, predicted)
-    print('TPRate: ', TPRate)
-    print('FPRate: ', FPRate)
+    index = predicted.argsort()
+    index = index[::-1]
+    cnt = 0
+    for i in range(K):
+        if y_test[index[i]] == 1: cnt += 1
+
     print('AUC: ', AUC)
+    print('Hit@{}: {}'.format(K, cnt/K))
 
 
 if __name__ == '__main__':
