@@ -1,12 +1,12 @@
-from train_gbdt import LABEL
 from datasets import MyDataSet
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn import metrics
 import joblib
 import os
 
 LABEL = 'total_tax'
 DATA_PATH = 'data/final_table.csv'
-CHECKPOINT_PATH = 'stats'
+CHECKPOINT_PATH = 'stats/gbdt'
 
 model = GradientBoostingClassifier(learning_rate=0.1, subsample=0.9, n_estimators=100, max_depth=5, min_samples_leaf=2)
 dataset = MyDataSet(DATA_PATH, LABEL)
@@ -23,12 +23,13 @@ else:
 
 
 def test():
-    predicted = model.predict(X_test)    
+    predicted = model.predict(X_test)
     TP = 0
     FP = 0
     FN = 0
     TN = 0
     for i in range(len_test):
+        #print(y_test[i], predicted[i])
         if y_test[i] == 1:
             if predicted[i] == 1: TP += 1
             else: FN += 1
@@ -37,9 +38,10 @@ def test():
             else: TN += 1
     TPRate = TP / (TP + FN)
     FPRate = FP / (FP + TN)
+    AUC = metrics.roc_auc_score(y_test, predicted)
     print('TPRate: ', TPRate)
     print('FPRate: ', FPRate)
-    print('AUC: ', 0.5 * TPRate * FPRate + 0.5 * (1 - FPRate) * (1 + TPRate))
+    print('AUC: ', AUC)
 
 
 if __name__ == '__main__':
