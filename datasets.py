@@ -32,7 +32,7 @@ def CntNotNan(list):
 
 
 class MyDataSet(object):
-    def __init__(self, data_path, label) -> None:
+    def __init__(self, data_path, label, flag=1) -> None:
         super().__init__()
 
         '''
@@ -64,6 +64,13 @@ class MyDataSet(object):
         lst = self.data[:, self.index]
         NMaxPos(lst, int(CntNotNan(lst) * POS_SAMPLE))
 
+        if flag == 1:
+            self.data = self.data[0 : int(self.length * TRAIN_PROP)]
+            self.length = int(self.length * TRAIN_PROP)
+        else: 
+            self.data = self.data[int(self.length * TRAIN_PROP) : self.length]
+            self.length = self.length - int(self.length * TRAIN_PROP)
+        
     def __len__(self):
         return self.length
     
@@ -78,6 +85,11 @@ class MyDataSet(object):
     def getColumn(self, index):
         list = copy.deepcopy(self.data[:,index])
         return list
+    
+    def get_data(self):
+        data = copy.deepcopy(self.data)
+        data = np.delete(data, [0, self.index], axis=1)
+        return data, self.data[:,self.index]
     
     def train_data(self):
         data = copy.deepcopy(self.data)
@@ -95,7 +107,7 @@ class MyDataSet(object):
 
 
 if __name__ == '__main__':
-    dataset = MyDataSet(DATA_PATH, 'total_tax')
+    dataset = MyDataSet(DATA_PATH, 'dishonest', 1)
     train_X, train_y = dataset.train_data()
     test_X, test_y = dataset.test_data()
     total_tax = dataset.getColumn(9)
