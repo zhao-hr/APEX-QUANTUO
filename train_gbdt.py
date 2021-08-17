@@ -1,17 +1,21 @@
+import sklearn
 from datasets import MyDataSet
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn import metrics
 import joblib
 import os
 
-LABEL = 'total_liability'
+LABEL = 'total_sales'
 DATA_PATH = 'data/final_table.csv'
-CHECKPOINT_PATH = 'stats'
+CHECKPOINT_PATH = 'stats/gbdt'
 NEW_MODEL_FLAG = True   ### Whether to train a new model instead of loading checkpoint.pkl
 
 model = GradientBoostingClassifier(learning_rate=0.1, subsample=0.9, n_estimators=100, max_depth=5, min_samples_leaf=2)
-dataset = MyDataSet(DATA_PATH, LABEL)
-X_train, y_train = dataset.train_data()
-X_test, y_test = dataset.test_data()
+train_dataset = MyDataSet(DATA_PATH, LABEL, 1)
+test_dataset = MyDataSet(DATA_PATH, LABEL, 0)
+X_train, y_train = train_dataset.get_data()
+X_test, y_test = test_dataset.get_data()
+print(X_train.shape, X_test.shape)
 len_train = X_train.shape[0]
 len_test = X_test.shape[0]
 
@@ -34,6 +38,7 @@ def test():
     FN = 0
     TN = 0
     for i in range(len_test):
+        #print(y_test[i], predicted[i])
         if y_test[i] == 1:
             if predicted[i] == 1: TP += 1
             else: FN += 1
@@ -42,9 +47,11 @@ def test():
             else: TN += 1
     TPRate = TP / (TP + FN)
     FPRate = FP / (FP + TN)
+    AUC = metrics.roc_auc_score(y_test, predicted)
     print('TPRate: ', TPRate)
     print('FPRate: ', FPRate)
-    print('AUC: ', 0.5 * TPRate * FPRate + 0.5 * (1 - FPRate) * (1 + TPRate))
+    print('AUC: ', AUC)
+    
 
 if __name__ == '__main__':
     train()
